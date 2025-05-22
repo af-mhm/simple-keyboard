@@ -17,6 +17,8 @@
 package rkr.simplekeyboard.inputmethod.latin;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -76,6 +78,7 @@ import rkr.simplekeyboard.inputmethod.latin.utils.ViewLayoutUtils;
 public class LatinIME extends InputMethodService implements KeyboardActionListener,
         RichInputMethodManager.SubtypeChangedListener {
     static final String TAG = LatinIME.class.getSimpleName();
+    private ClipboardManager mClipboardManager;
     private static final boolean TRACE = false;
 
     private static final int EXTENDED_TOUCHABLE_REGION_HEIGHT = 100;
@@ -257,6 +260,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         mRichImm.setSubtypeChangeHandler(this);
         KeyboardSwitcher.init(this);
         AudioAndHapticFeedbackManager.init(this);
+        mClipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         super.onCreate();
 
         // TODO: Resolve mutual dependencies of {@link #loadSettings()} and
@@ -741,6 +745,38 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
     // This method is public for testability of LatinIME, but also in the future it should
     // completely replace #onCodeInput.
     public void onEvent(final Event event) {
+        final int primaryCode = event.mKeyCode;
+        if (primaryCode == Constants.KEYCODE_COPY) {
+            final CharSequence selectedText = mInputLogic.mConnection.getSelectedText(0);
+            if (!TextUtils.isEmpty(selectedText)) {
+                final ClipData clip = ClipData.newPlainText(null /* label */, selectedText);
+                mClipboardManager.setPrimaryClip(clip);
+            }
+            // Consume the event.
+            return;
+        } else if (primaryCode == Constants.KEYCODE_PASTE) {
+            if (mClipboardManager.hasPrimaryClip()) {
+                final ClipData clipData = mClipboardManager.getPrimaryClip();
+                if (clipData != null && clipData.getItemCount() > 0) {
+                    final CharSequence textToPaste = clipData.getItemAt(0).coerceToText(this);
+                    if (!TextUtils.isEmpty(textToPaste)) {
+                        mInputLogic.mConnection.commitText(textToPaste, 1);
+                    }
+                }
+            }
+            // Consume the event.
+            return;
+        } else if (primaryCode == Constants.KEYCODE_CUT) {
+            final CharSequence selectedText = mInputLogic.mConnection.getSelectedText(0);
+            if (!TextUtils.isEmpty(selectedText)) {
+                final ClipData clip = ClipData.newPlainText(null /* label */, selectedText);
+                mClipboardManager.setPrimaryClip(clip);
+                // Delete the selected text
+                mInputLogic.mConnection.commitText("", 1);
+            }
+            // Consume the event.
+            return;
+        }
         final InputTransaction completeInputTransaction =
                 mInputLogic.onCodeInput(mSettings.getCurrent(), event);
         updateStateAfterInputTransaction(completeInputTransaction);

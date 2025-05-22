@@ -98,6 +98,9 @@ public final class Constants {
     public static final int CODE_LANGUAGE_SWITCH = -10;
     public static final int CODE_SHIFT_ENTER = -11;
     public static final int CODE_SYMBOL_SHIFT = -12;
+    public static final int KEYCODE_COPY = -1001;
+    public static final int KEYCODE_PASTE = -1002;
+    public static final int KEYCODE_CUT = -1003;
     // Code value representing the code is not specified.
     public static final int CODE_UNSPECIFIED = -13;
 

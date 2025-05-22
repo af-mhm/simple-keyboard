@@ -52,6 +52,20 @@
             latin:keyXPos="86%p"
             latin:keyWidth="14%p" />
     </Row>
+    <Row latin:keyWidth="10%p">
+        <Key
+            latin:keyIcon="@android:drawable/ic_menu_copy"
+            latin:codes="-1001"
+            latin:keyWidth="30%p" />
+        <Key
+            latin:keyIcon="@android:drawable/ic_menu_cut"
+            latin:codes="-1003"
+            latin:keyWidth="30%p" />
+        <Key
+            latin:keyIcon="@android:drawable/ic_menu_paste"
+            latin:codes="-1002"
+            latin:keyWidth="fillRight" />
+    </Row>
     <Row
         latin:keyWidth="10%p"
         latin:backgroundType="functional"
